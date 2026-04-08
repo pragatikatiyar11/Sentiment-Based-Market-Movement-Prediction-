@@ -1,4 +1,5 @@
 from flask import Flask, jsonify
+from ml_model.sentiment import analyze
 
 app = Flask(__name__)
 
@@ -6,12 +7,15 @@ app = Flask(__name__)
 def home():
     return {"message": "API Running Successfully"}
 
-@app.route("/predict/<symbol>")
-def predict(symbol):
+@app.route("/predict/<text>")
+def predict(text):
+    result = analyze(text)
+
+    sentiment = result[0]['label']
+
     return jsonify({
-        "stock": symbol,
-        "prediction": "BUY",
-        "confidence": 0.85
+        "input": text,
+        "sentiment": sentiment
     })
 
 if __name__ == "__main__":
