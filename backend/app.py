@@ -20,3 +20,10 @@ def predict(text):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+from stock import get_stock
+
+@app.route("/stock/<symbol>")
+def stock(symbol):
+    data = get_stock(symbol)
+    return data
