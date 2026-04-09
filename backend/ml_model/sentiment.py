@@ -3,4 +3,5 @@ from transformers import pipeline
 model = pipeline("sentiment-analysis")
 
 def analyze(text):
-    return model(text)
+    result = model(text)[0]
+    return result
