@@ -1,5 +1,5 @@
 from flask import Flask, jsonify
-from sentiment import analyze
+from ml_model.sentiment import analyze
 from stock import get_stock
 from predictor import predict_action
 
