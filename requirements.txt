@@ -2,5 +2,5 @@ flask
 transformers
 torch
 yfinance
-scikit-learn
 pandas
+scikit-learn
