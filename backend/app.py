@@ -1,29 +1,36 @@
 from flask import Flask, jsonify
-from ml_model.sentiment import analyze
+from sentiment import analyze
+from stock import get_stock
+from predictor import predict_action
 
 app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return {"message": "API Running Successfully"}
+    return {"message": "Stock Sentiment API Running"}
 
-@app.route("/predict/<text>")
-def predict(text):
-    result = analyze(text)
+@app.route("/predict/<symbol>/<text>")
+def predict(symbol, text):
+    
+    sentiment_result = analyze(text)
+    stock_data = get_stock(symbol)
 
-    sentiment = result[0]['label']
+    if stock_data is None:
+        return {"error": "Stock data not available"}
+
+    action = predict_action(
+        sentiment_result['label'],
+        stock_data['change']
+    )
 
     return jsonify({
-        "input": text,
-        "sentiment": sentiment
+        "stock": symbol,
+        "sentiment": sentiment_result['label'],
+        "confidence": sentiment_result['score'],
+        "price": stock_data['price'],
+        "change": stock_data['change'],
+        "prediction": action
     })
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-from stock import get_stock
-
-@app.route("/stock/<symbol>")
-def stock(symbol):
-    data = get_stock(symbol)
-    return data
