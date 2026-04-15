@@ -10,6 +10,7 @@ Reference: Phase 6 (Week 5-6) - API Integration and Reliability
 import logging
 from datetime import datetime
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 from config import (
     STOCK_UNIVERSE, 
@@ -36,6 +37,9 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 app = Flask(__name__)
+
+# Enable CORS for all origins (allow file:// protocol and localhost)
+CORS(app, resources={r"/*": {"origins": ["*"]}})
 
 @app.route("/")
 def home():

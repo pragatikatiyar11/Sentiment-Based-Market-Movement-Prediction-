@@ -10,12 +10,16 @@ This module handles:
 Reference: Phase 5 (Week 4-5) - Validation and Backtesting
 """
 
+import sys
 import logging
 import pandas as pd
 import numpy as np
 import pickle
 from pathlib import Path
 from datetime import datetime
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config import ARTIFACT_PATHS, SUCCESS_CRITERIA
 

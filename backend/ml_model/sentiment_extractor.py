@@ -10,10 +10,14 @@ This module handles:
 Reference: Phase 3 (Week 2-3) - Finance Sentiment Layer
 """
 
+import sys
 import logging
 import pandas as pd
 import numpy as np
 from pathlib import Path
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config import SENTIMENT_CONFIG, ARTIFACT_PATHS
 

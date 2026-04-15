@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment-Based Market Movement Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+
+        .section {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .result.up {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.down {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .result h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .result p {
+            font-size: 13px;
+            margin: 5px 0;
+        }
+
+        .confidence {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .stocks-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .stocks-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stock-button {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .stock-button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .backtest-result {
+            margin-top: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+            font-size: 13px;
+        }
+
+        .backtest-result p {
+            margin: 5px 0;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+            padding: 3px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .metric-value {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .api-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 16px;
+            border-radius: 25px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .api-status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .api-status.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        .api-status.online .status-dot {
+            background: #28a745;
+        }
+
+        .api-status.offline .status-dot {
+            background: #dc3545;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 Market Prediction Engine</h1>
+            <p>Sentiment-Based Stock Movement Forecasting</p>
+        </div>
+
+        <div class="grid">
+            <!-- Prediction Section -->
+            <div class="section">
+                <h2>🔮 Make Prediction</h2>
+                
+                <div class="form-group">
+                    <label for="symbol">Stock Symbol</label>
+                    <select id="symbol">
+                        <option value="">Select a stock...</option>
+                        <option value="AAPL">AAPL - Apple</option>
+                        <option value="MSFT">MSFT - Microsoft</option>
+                        <option value="GOOGL">GOOGL - Google</option>
+                        <option value="TSLA">TSLA - Tesla</option>
+                        <option value="AMZN">AMZN - Amazon</option>
+                        <option value="NVDA">NVDA - NVIDIA</option>
+                        <option value="META">META - Meta</option>
+                        <option value="JPM">JPM - JPMorgan</option>
+                        <option value="BAC">BAC - Bank of America</option>
+                        <option value="XOM">XOM - ExxonMobil</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="sentiment-text">Sentiment Text (News/Headlines)</label>
+                    <textarea id="sentiment-text" placeholder="Enter news headline or sentiment text..."></textarea>
+                </div>
+
+                <button onclick="makePrediction()">🚀 Predict Direction</button>
+                <div class="loading" id="predict-loading">
+                    <span class="spinner"></span>
+                    <span>Analyzing sentiment...</span>
+                </div>
+
+                <div class="result" id="prediction-result"></div>
+            </div>
+
+            <!-- Backtest Section -->
+            <div class="section">
+                <h2>📊 View Backtesting</h2>
+                
+                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
+                    Select a stock to view historical performance metrics
+                </p>
+
+                <div class="stocks-list">
+                    <button class="stock-button" onclick="getBacktest('AAPL')">AAPL</button>
+                    <button class="stock-button" onclick="getBacktest('MSFT')">MSFT</button>
+                    <button class="stock-button" onclick="getBacktest('GOOGL')">GOOGL</button>
+                    <button class="stock-button" onclick="getBacktest('TSLA')">TSLA</button>
+                    <button class="stock-button" onclick="getBacktest('AMZN')">AMZN</button>
+                    <button class="stock-button" onclick="getBacktest('NVDA')">NVDA</button>
+                    <button class="stock-button" onclick="getBacktest('META')">META</button>
+                    <button class="stock-button" onclick="getBacktest('JPM')">JPM</button>
+                    <button class="stock-button" onclick="getBacktest('BAC')">BAC</button>
+                    <button class="stock-button" onclick="getBacktest('XOM')">XOM</button>
+                </div>
+
+                <div class="loading" id="backtest-loading">
+                    <span class="spinner"></span>
+                    <span>Fetching backtest data...</span>
+                </div>
+
+                <div class="backtest-result" id="backtest-result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="api-status online" id="api-status">
+        <span class="status-dot"></span>
+        <span>API: <span id="status-text">Checking...</span></span>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000';
+
+        // Check API status on load
+        window.addEventListener('load', () => {
+            checkApiStatus();
+            setInterval(checkApiStatus, 5000);
+        });
+
+        function checkApiStatus() {
+            fetch(`${API_BASE}/predict`, { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symbol: 'AAPL', text: 'test' })
+            })
+            .then(() => updateStatus(true))
+            .catch(() => updateStatus(false));
+        }
+
+        function updateStatus(online) {
+            const statusEl = document.getElementById('api-status');
+            const statusText = document.getElementById('status-text');
+            
+            if (online) {
+                statusEl.classList.remove('offline');
+                statusEl.classList.add('online');
+                statusText.textContent = 'Online';
+            } else {
+                statusEl.classList.remove('online');
+                statusEl.classList.add('offline');
+                statusText.textContent = 'Offline';
+            }
+        }
+
+        async function makePrediction() {
+            const symbol = document.getElementById('symbol').value;
+            const text = document.getElementById('sentiment-text').value;
+            const resultEl = document.getElementById('prediction-result');
+            const loadingEl = document.getElementById('predict-loading');
+
+            if (!symbol) {
+                showError(resultEl, 'Please select a stock symbol');
+                return;
+            }
+
+            if (!text.trim()) {
+                showError(resultEl, 'Please enter sentiment text');
+                return;
+            }
+
+            loadingEl.style.display = 'block';
+            resultEl.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol, text })
+                });
+
+                if (!response.ok) throw new Error('API request failed');
+                
+                const data = await response.json();
+                
+                loadingEl.style.display = 'none';
+                showPredictionResult(data, resultEl);
+            } catch (error) {
+                loadingEl.style.display = 'none';
+                showError(resultEl, `Error: ${error.message}. Make sure the API is running on ${API_BASE}`);
+            }
+        }
+
+        async function getBacktest(symbol) {
+            const loadingEl = document.getElementById('backtest-loading');
+            const resultEl = document.getElementById('backtest-result');
+
+            loadingEl.style.display = 'block';
+            resultEl.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/backtest?symbol=${symbol}`);
+                if (!response.ok) throw new Error('API request failed');
+                
+                const data = await response.json();
+                
+                loadingEl.style.display = 'none';
+                showBacktestResult(data, symbol, resultEl);
+            } catch (error) {
+                loadingEl.style.display = 'none';
+                resultEl.innerHTML = `<p style="color: #721c24;">Error: ${error.message}</p>`;
+                resultEl.style.display = 'block';
+            }
+        }
+
+        function showPredictionResult(data, resultEl) {
+            const direction = data.prediction === 1 ? 'UP' : 'DOWN';
+            const confidence = (data.confidence * 100).toFixed(1);
+            const isUp = data.prediction === 1;
+
+            resultEl.className = `result ${isUp ? 'up' : 'down'}`;
+            resultEl.innerHTML = `
+                <h3>📊 Prediction: <strong>${direction}</strong></h3>
+                <p><strong>Symbol:</strong> ${data.symbol}</p>
+                <p><strong>Direction:</strong> Stock is predicted to move ${direction}</p>
+                <div class="confidence">Confidence: ${confidence}%</div>
+            `;
+            resultEl.style.display = 'block';
+        }
+
+        function showBacktestResult(data, symbol, resultEl) {
+            resultEl.innerHTML = `
+                <h3>📈 Backtest Results for ${symbol}</h3>
+                <div class="metric-row">
+                    <span class="metric-label">Total Trades:</span>
+                    <span class="metric-value">${data.total_trades || 'N/A'}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Win Rate:</span>
+                    <span class="metric-value">${data.win_rate ? (data.win_rate * 100).toFixed(1) + '%' : 'N/A'}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Total Return:</span>
+                    <span class="metric-value">${data.total_return ? (data.total_return * 100).toFixed(2) + '%' : 'N/A'}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Sharpe Ratio:</span>
+                    <span class="metric-value">${data.sharpe_ratio ? data.sharpe_ratio.toFixed(2) : 'N/A'}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Max Drawdown:</span>
+                    <span class="metric-value">${data.max_drawdown ? (data.max_drawdown * 100).toFixed(2) + '%' : 'N/A'}</span>
+                </div>
+                <p style="margin-top: 10px; font-size: 12px; color: #999;">
+                    <em>Data based on historical backtest (2024-2026)</em>
+                </p>
+            `;
+            resultEl.style.display = 'block';
+        }
+
+        function showError(resultEl, message) {
+            resultEl.className = 'result error';
+            resultEl.innerHTML = `<h3>⚠️ Error</h3><p>${message}</p>`;
+            resultEl.style.display = 'block';
+        }
+
+        // Enter key to submit prediction
+        document.getElementById('sentiment-text').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                makePrediction();
+            }
+        });
+    </script>
+</body>
+</html>
