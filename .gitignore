@@ -205,3 +205,38 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ============================================================================
+# Project-Specific: Sentiment-Based Market Movement Prediction
+# ============================================================================
+
+# Data files (Phase 2-3 outputs - volatile, regenerated each run)
+backend/data/
+*.csv
+*.parquet
+
+# Trained models (Phase 4 outputs - large, regenerated each training)
+backend/ml_model/trained_models/
+backend/ml_model/*.pkl
+backend/ml_model/*.joblib
+
+# Logs & cache (debugging artifacts)
+backend/logs/
+backend/cache/
+*.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# API keys & secrets (security)
+.env.local
+.env.*.local
+NEWSAPI_KEY
+*.key
+
+# VS Code workspace settings
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
