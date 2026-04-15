@@ -3,7 +3,7 @@
 Use this checklist to track end-to-end progress for the backend ML pipeline build.
 
 - [x] Phase 1 (Week 1): Problem Framing and Setup
-- [ ] Phase 2 (Week 1-2): Data Ingestion and Alignment
+- [x] Phase 2 (Week 1-2): Data Ingestion and Alignment
 - [ ] Phase 3 (Week 2-3): Finance Sentiment Layer (FinBERT-class)
 - [ ] Phase 4 (Week 3-4): Prediction Model and Feature Engineering
 - [ ] Phase 5 (Week 4-5): Validation and Backtesting
@@ -13,7 +13,7 @@ Use this checklist to track end-to-end progress for the backend ML pipeline buil
 ## Optional Tracking Notes
 
 - [x] Phase 1 deliverables complete
-- [ ] Phase 2 deliverables complete
+- [x] Phase 2 deliverables complete
 - [ ] Phase 3 deliverables complete
 - [ ] Phase 4 deliverables complete
 - [ ] Phase 5 deliverables complete
@@ -31,10 +31,10 @@ Use this checklist to track end-to-end progress for the backend ML pipeline buil
 
 ### Week 2
 
-- [ ] Build market data ingestion pipeline
-- [ ] Build text/news sentiment ingestion pipeline
-- [ ] Align timestamps and generate joined training dataset
-- [ ] Validate dataset quality and split strategy
+- [x] Build market data ingestion pipeline
+- [x] Build text/news sentiment ingestion pipeline
+- [x] Align timestamps and generate joined training dataset
+- [x] Validate dataset quality and split strategy
 
 ### Week 3
 
