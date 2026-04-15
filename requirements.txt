@@ -1,6 +1,50 @@
-flask
-transformers
-torch
-yfinance
-pandas
-scikit-learn
+# Core API & Web Framework
+Flask==2.3.3
+Werkzeug==2.3.7
+
+# Deep Learning & NLP (Sentiment Analysis)
+torch==2.0.1
+transformers==4.33.3  # FinBERT and other transformer models
+sentencepiece==0.1.99  # Tokenizer dependency
+
+# Market Data & Financial Tools
+yfinance==0.2.32
+pandas==2.1.1
+numpy==1.24.3
+
+# Machine Learning & Model Training
+scikit-learn==1.3.1
+xgboost==2.0.1
+lightgbm==4.0.0
+optuna==3.14.0  # Hyperparameter optimization
+
+# Data Processing & Feature Engineering
+ta==0.10.2  # Technical analysis indicators (SMA, RSI, MACD, etc.)
+
+# Backtesting & Evaluation
+backtrader==1.9.78
+scipy==1.11.3
+
+# Data Persistence & Caching
+joblib==1.3.2  # Model serialization
+
+# News/Sentiment Data Sources (Phase 2 extensions)
+newsapi==0.1.1
+requests==2.31.0
+
+# Logging & Monitoring
+python-logging==1.1.2
+
+# Testing (Optional, for Phase 6 robustness)
+pytest==7.4.2
+pytest-cov==4.1.0
+
+# Data Visualization (Optional, for analysis notebooks)
+matplotlib==3.8.0
+seaborn==0.13.0
+plotly==5.17.0
+
+# Development Tools
+black==23.9.1  # Code formatting
+flake8==6.1.0  # Linting
+isort==5.12.0  # Import sorting
