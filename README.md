@@ -39,34 +39,40 @@ See [PHASE_CHECKLIST.md](PHASE_CHECKLIST.md) for a detailed week-wise breakdown.
 
 ```
 .
-├── README.md                              # This file
-├── requirements.txt                       # All dependencies (pinned versions)
-├── PHASE_CHECKLIST.md                     # Phase tracking checklist
+├── README.md                         # This file
+├── requirements.txt                  # Pinned dependencies
+├── PHASE_CHECKLIST.md                # Phase tracking
 │
-├── backend/
-│   ├── app.py                             # Flask API (Phases 1, 6)
-│   ├── config.py                          # Centralized project config (Phase 1)
-│   ├── PROJECT_PLAN.md                    # Detailed Phase 1 decisions
-│   ├── data_collector.py                  # Data ingestion pipeline (Phase 2)
-│   ├── stock.py                           # Market data helpers
-│   ├── predictor.py                       # Prediction logic (to upgrade in Phase 4)
-│   │
-│   ├── ml_model/
-│   │   ├── __init__.py
-│   │   ├── sentiment.py                   # Sentiment extraction (Phase 3)
-│   │   ├── train.py                       # Model training (Phase 4)
-│   │   ├── features.py                    # Feature engineering (Phase 4)
-│   │   ├── evaluate.py                    # Backtesting (Phase 5)
-│   │   └── trained_models/                # Serialized model artifacts
-│   │
-│   ├── data/
-│   │   ├── raw/                           # Raw OHLCV + news (Phase 2)
-│   │   └── processed/                     # Engineered features (Phase 4)
-│   │
-│   ├── logs/                              # Structured logs (Phase 6)
-│   └── cache/                             # Model cache (Phase 6)
-│
-└── [frontend/]                            # React dashboard (Phase 7, optional)
+└── backend/
+    ├── config.py                     # Centralized config (Phase 1)
+    ├── app.py                        # Flask API (Phase 1, 6)
+    ├── PROJECT_PLAN.md               # Phase 1 detailed decisions
+    ├── ARCHITECTURE.md               # Phase-to-file mapping
+    ├── PHASE2_README.md              # Phase 2 guide
+    ├── PHASE3_README.md              # Phase 3 guide
+    ├── PHASE4_README.md              # Phase 4 guide
+    │
+    ├── data_collector.py             # OHLCV ingestion (Phase 2)
+    ├── sentiment_collector.py        # News aggregation (Phase 2)
+    ├── pipeline.py                   # Unified pipeline (Phase 2)
+    │
+    ├── stock.py                      # Market helpers
+    ├── predictor.py                  # Prediction logic
+    │
+    ├── ml_model/
+    │   ├── __init__.py
+    │   ├── sentiment.py              # Sentiment extraction (Phase 1)
+    │   ├── sentiment_extractor.py    # Finance sentiment (Phase 3)
+    │   ├── train.py                  # Model training (Phase 4)
+    │   ├── evaluate.py               # Backtesting (Phase 5)
+    │   └── trained_models/           # Serialized models & scalers
+    │
+    ├── data/
+    │   ├── raw/                      # Raw OHLCV + news
+    │   └── processed/                # Engineered features
+    │
+    ├── logs/                         # Structured logs
+    └── cache/                        # Model cache
 ```
 
 ---
@@ -96,52 +102,98 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Phase 1: Review Project Configuration
+### 2. Review Phase 1 Config
 
-All core decisions are centralized in `backend/config.py`:
+All project decisions are in `backend/config.py`:
 
 ```bash
 cd backend
 python config.py  # Print configuration summary
-cat PROJECT_PLAN.md  # Review Phase 1 decisions
+cat PROJECT_PLAN.md  # Review detailed Phase 1 decisions
 ```
 
 **Key decisions**:
-- **Prediction Target**: Binary direction (UP/DOWN) for next trading day
-- **Stock Universe**: AAPL, MSFT, GOOGL, TSLA, AMZN, NVDA, META, JPM, BAC, XOM
-- **Data Sources**: Yahoo Finance (OHLCV) + NewsAPI (headlines)
-- **Success Criteria**: > 55% accuracy, < 15% max drawdown
+- Prediction target: Binary next-day direction (UP/DOWN)
+- Stock universe: 10 large-cap symbols (AAPL, MSFT, GOOGL, TSLA, AMZN, NVDA, META, JPM, BAC, XOM)
+- Success criteria: > 55% accuracy, < 15% max drawdown
 
-### 3. Phase 2: Fetch and Prepare Data
+### 3. Run Full Pipeline (Phase 2-5)
 
+**Option A: Sequential Steps**
 ```bash
-cd backend
-python data_collector.py
+# Phase 2: Collect market data + sentiment texts → unified dataset
+python pipeline.py
+
+# Phase 3: Extract sentiment features from headlines
+python ml_model/sentiment_extractor.py
+
+# Phase 4: Train prediction model
+python ml_model/train.py
+
+# Phase 5: Backtest and evaluate
+python ml_model/evaluate.py
 ```
 
-This will:
-- Fetch 3 years of OHLCV for all 10 stocks
-- Create binary labels (UP/DOWN)
-- Generate `backend/data/processed/training_dataset.csv`
-- Validate dataset integrity
+**Option B: Individual Phases**
+```bash
+# Phase 2 only
+python data_collector.py           # Market OHLCV + labels
+python sentiment_collector.py      # News headlines
+python pipeline.py                 # Join everything
 
-### 4. Phase 3-4: (Coming Soon)
+# Phase 3 only
+python ml_model/sentiment_extractor.py
 
-Model training and feature engineering notebooks will be provided.
+# Phase 4 only
+python ml_model/train.py
 
-### 5. Start API Server
+# Phase 5 only
+python ml_model/evaluate.py
+```
+
+### 4. Output Files
+
+After each phase, check:
+
+```
+backend/data/processed/
+├── training_dataset.csv                   # Phase 2
+├── sentiment_texts.csv                    # Phase 2
+├── unified_training_dataset.csv           # Phase 2
+└── sentiment_augmented_dataset.csv        # Phase 3
+
+backend/ml_model/trained_models/
+├── random_forest_20260416_123456.pkl      # Phase 4
+└── scaler_20260416_123456.pkl             # Phase 4
+```
+
+### 5. Start API Server (Phase 6)
 
 ```bash
-cd backend
 python app.py
 ```
 
-API will run on `http://localhost:5000`
+Server runs on `http://localhost:5000`
 
-**Endpoints** (Phase 6 full implementation):
-- `POST /predict` — Predict stock direction given symbol + text
-- `GET /backtest` — Run backtest for symbol over date range
-- `GET /` — Health check and API info
+**Test endpoints**:
+```bash
+# Predict stock direction
+curl -X POST http://localhost:5000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"symbol": "AAPL", "text": "Apple reports strong earnings"}'
+
+# Backtest a symbol
+curl "http://localhost:5000/backtest?symbol=AAPL&start_date=2024-01-01"
+```
+
+### 6. Documentation
+
+- [PHASE_CHECKLIST.md](PHASE_CHECKLIST.md) — Phase-wise task tracking
+- [backend/ARCHITECTURE.md](backend/ARCHITECTURE.md) — Phase-to-file mapping
+- [backend/PROJECT_PLAN.md](backend/PROJECT_PLAN.md) — Phase 1 detailed plan
+- [backend/PHASE2_README.md](backend/PHASE2_README.md) — Phase 2 guide
+- [backend/PHASE3_README.md](backend/PHASE3_README.md) — Phase 3 guide
+- [backend/PHASE4_README.md](backend/PHASE4_README.md) — Phase 4 guide
 
 ---
 
